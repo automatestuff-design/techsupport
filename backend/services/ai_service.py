@@ -18,8 +18,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from models import KnowledgeEntry, SearchQuery, Transcript
 
-client = AsyncAnthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-
+def _get_client() -> AsyncAnthropic:
+    key = os.environ.get("ANTHROPIC_API_KEY")
+    if not key:
+        raise RuntimeError("ANTHROPIC_API_KEY is not set. Add it to your .env file.")
+    return AsyncAnthropic(api_key=key)
 SYSTEM_PROMPT = """You are an expert technical support knowledge analyst. \
 Your job is to help support teams find answers to customer problems by analyzing \
 call transcripts.
@@ -58,7 +61,7 @@ async def _find_knowledge_entry(
     candidates = "\n".join(
         f"ID {e.id}: {e.problem_pattern}" for e in entries
     )
-    response = await client.messages.create(
+    response = await _get_client().messages.create(
         model="claude-opus-4-7",
         max_tokens=256,
         system=(
@@ -143,7 +146,7 @@ async def search_with_ai(
     if transcript_blocks:
         transcript_blocks[-1]["cache_control"] = {"type": "ephemeral"}
 
-    response = await client.messages.create(
+    response = await _get_client().messages.create(
         model="claude-opus-4-7",
         max_tokens=1024,
         system=[
