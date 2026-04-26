@@ -45,6 +45,23 @@ class SearchFeedback(Base):
     transcript: Mapped["Transcript | None"] = relationship(back_populates="feedback")
 
 
+class SyncedRecording(Base):
+    """Tracks RingCentral recordings that have been synced to avoid duplicates."""
+
+    __tablename__ = "synced_recordings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    recording_id: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    transcript_id: Mapped[int | None] = mapped_column(ForeignKey("transcripts.id"), nullable=True)
+    ai_job_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
+    # pending → transcribing → done | failed
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    call_metadata: Mapped[str | None] = mapped_column(Text, nullable=True)  # JSON
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 class KnowledgeEntry(Base):
     """Learned Q&A pairs that accumulate from positive-feedback searches."""
 

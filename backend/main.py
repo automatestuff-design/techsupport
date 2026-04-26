@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database import init_db, AsyncSessionLocal
 from models import Transcript
-from routers import transcripts, search, feedback
+from routers import transcripts, search, feedback, ringcentral
 
 
 SEED_TRANSCRIPTS = [
@@ -266,6 +266,7 @@ app.add_middleware(
 app.include_router(transcripts.router)
 app.include_router(search.router)
 app.include_router(feedback.router)
+app.include_router(ringcentral.router)
 
 
 @app.get("/health")
