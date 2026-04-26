@@ -146,7 +146,6 @@ async def search_with_ai(
     response = await client.messages.create(
         model="claude-opus-4-7",
         max_tokens=1024,
-        thinking={"type": "adaptive"},
         system=[
             {
                 "type": "text",
@@ -168,9 +167,8 @@ async def search_with_ai(
         ],
     )
 
-    # Extract text from response (skip thinking blocks)
     answer_text = next(
-        (b.text for b in response.content if b.type == "text"), "{}"
+        (b.text for b in response.content if hasattr(b, "text")), "{}"
     )
 
     try:
