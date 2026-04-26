@@ -1,10 +1,13 @@
-import { Routes, Route, NavLink } from "react-router-dom";
+import { Routes, Route, NavLink, Navigate } from "react-router-dom";
 import {
   Search,
   FileText,
   Brain,
   Plus,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "./contexts/AuthContext";
+import LoginPage from "./pages/LoginPage";
 import SearchPage from "./pages/SearchPage";
 import TranscriptsPage from "./pages/TranscriptsPage";
 import TranscriptDetailPage from "./pages/TranscriptDetailPage";
@@ -17,10 +20,11 @@ const navItems = [
   { to: "/knowledge", label: "Knowledge Base", icon: Brain },
 ];
 
-export default function App() {
+function AuthenticatedApp() {
+  const { user, signOut } = useAuth();
+
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Top nav */}
       <header className="bg-brand-600 sticky top-0 z-10 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -48,18 +52,29 @@ export default function App() {
                 ))}
               </nav>
             </div>
-            <NavLink
-              to="/transcripts/new"
-              className="flex items-center gap-2 text-sm py-1.5 px-4 rounded-lg font-medium bg-gold-400 text-brand-900 hover:bg-gold-300 transition-colors"
-            >
-              <Plus size={16} />
-              Add Transcript
-            </NavLink>
+            <div className="flex items-center gap-3">
+              <NavLink
+                to="/transcripts/new"
+                className="flex items-center gap-2 text-sm py-1.5 px-4 rounded-lg font-medium bg-gold-400 text-brand-900 hover:bg-gold-300 transition-colors"
+              >
+                <Plus size={16} />
+                Add Transcript
+              </NavLink>
+              <div className="flex items-center gap-2 text-brand-100 text-sm">
+                <span className="hidden sm:block truncate max-w-[160px]">{user?.email}</span>
+                <button
+                  onClick={signOut}
+                  title="Sign out"
+                  className="p-1.5 rounded-lg hover:bg-brand-500 transition-colors"
+                >
+                  <LogOut size={16} />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Main content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
         <Routes>
           <Route path="/" element={<SearchPage />} />
@@ -68,8 +83,24 @@ export default function App() {
           <Route path="/transcripts/:id" element={<TranscriptDetailPage />} />
           <Route path="/transcripts/:id/edit" element={<TranscriptFormPage />} />
           <Route path="/knowledge" element={<KnowledgePage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
     </div>
   );
+}
+
+export default function App() {
+  const { session, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-brand-50 flex items-center justify-center">
+        <div className="text-brand-600 text-sm">Loading…</div>
+      </div>
+    );
+  }
+
+  if (!session) return <LoginPage />;
+  return <AuthenticatedApp />;
 }

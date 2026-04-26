@@ -3,12 +3,17 @@ import io
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
-from sqlalchemy import select, or_
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from auth import get_current_user
 from database import get_db
 from models import Transcript
 
-router = APIRouter(prefix="/transcripts", tags=["transcripts"])
+router = APIRouter(
+    prefix="/transcripts",
+    tags=["transcripts"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 class TranscriptCreate(BaseModel):
@@ -45,6 +50,14 @@ async def list_transcripts(
         stmt = stmt.where(Transcript.category == category)
     result = await db.execute(stmt)
     return result.scalars().all()
+
+
+@router.get("/categories/list")
+async def list_categories(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(Transcript.category).distinct().where(Transcript.category.isnot(None))
+    )
+    return [row[0] for row in result.all()]
 
 
 @router.get("/{transcript_id}", response_model=TranscriptResponse)
@@ -90,14 +103,6 @@ async def delete_transcript(transcript_id: int, db: AsyncSession = Depends(get_d
     await db.commit()
 
 
-@router.get("/categories/list")
-async def list_categories(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(
-        select(Transcript.category).distinct().where(Transcript.category.isnot(None))
-    )
-    return [row[0] for row in result.all()]
-
-
 CSV_COLUMNS = ["title", "content", "caller_name", "agent_name", "call_date", "category"]
 
 
@@ -111,7 +116,7 @@ async def upload_transcripts_csv(
 
     raw = await file.read()
     try:
-        text = raw.decode("utf-8-sig")  # utf-8-sig strips BOM if present
+        text = raw.decode("utf-8-sig")
     except UnicodeDecodeError:
         text = raw.decode("latin-1")
 
@@ -126,7 +131,7 @@ async def upload_transcripts_csv(
     created, skipped = 0, 0
     errors: list[str] = []
 
-    for i, row in enumerate(reader, start=2):  # row 1 is header
+    for i, row in enumerate(reader, start=2):
         title = (row.get("title") or "").strip()
         content = (row.get("content") or "").strip()
         if not title or not content:

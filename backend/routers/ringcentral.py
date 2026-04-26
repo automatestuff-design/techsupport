@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from auth import get_current_user
 from database import get_db
 from services.ringcentral_service import (
     sync_new_calls,
@@ -17,7 +18,7 @@ class SyncRequest(BaseModel):
     days_back: int = 1
 
 
-@router.post("/sync")
+@router.post("/sync", dependencies=[Depends(get_current_user)])
 async def trigger_sync(req: SyncRequest, db: AsyncSession = Depends(get_db)):
     """Fetch new calls from RingCentral and submit recordings for transcription."""
     try:
@@ -28,7 +29,7 @@ async def trigger_sync(req: SyncRequest, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=502, detail=f"RingCentral API error: {e}")
 
 
-@router.post("/poll")
+@router.post("/poll", dependencies=[Depends(get_current_user)])
 async def poll_jobs(db: AsyncSession = Depends(get_db)):
     """Check status of pending transcription jobs and save any completed ones."""
     try:
@@ -54,7 +55,7 @@ async def ai_callback(request: Request, db: AsyncSession = Depends(get_db)):
     return {"received": True, "saved": saved}
 
 
-@router.get("/status")
+@router.get("/status", dependencies=[Depends(get_current_user)])
 async def sync_status(db: AsyncSession = Depends(get_db)):
     """Return sync statistics and whether RingCentral credentials are configured."""
     return await get_sync_status(db)
