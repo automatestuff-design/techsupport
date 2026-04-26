@@ -41,16 +41,16 @@ function AIAnswerPanel({
     <div
       className={`card p-5 border-2 ${
         result.from_knowledge_base
-          ? "border-purple-200 bg-purple-50"
-          : "border-blue-100 bg-blue-50"
+          ? "border-brand-300 bg-brand-50"
+          : "border-brand-200 bg-brand-50"
       }`}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
           {result.from_knowledge_base ? (
-            <Brain size={18} className="text-purple-600 shrink-0" />
+            <Brain size={18} className="text-brand-600 shrink-0" />
           ) : (
-            <Sparkles size={18} className="text-blue-600 shrink-0" />
+            <Sparkles size={18} className="text-brand-500 shrink-0" />
           )}
           <span className="font-semibold text-sm text-gray-700">
             {result.from_knowledge_base
@@ -58,7 +58,7 @@ function AIAnswerPanel({
               : "AI-Generated Answer"}
           </span>
           {result.is_recurring && (
-            <span className="badge bg-orange-100 text-orange-700">Recurring issue</span>
+            <span className="badge bg-gold-100 text-gold-600">Recurring issue</span>
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -75,7 +75,7 @@ function AIAnswerPanel({
           Based on transcripts:{" "}
           {result.source_transcript_ids.map((id, i) => (
             <span key={id}>
-              <Link to={`/transcripts/${id}`} className="text-blue-600 hover:underline">
+              <Link to={`/transcripts/${id}`} className="text-brand-600 hover:underline">
                 #{id}
               </Link>
               {i < result.source_transcript_ids.length - 1 && ", "}
@@ -191,7 +191,7 @@ export default function SearchPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Describe the problem or search for keywords..."
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm"
           />
         </div>
         <button
@@ -234,16 +234,16 @@ export default function SearchPage() {
                 <Link
                   key={r.transcript_id}
                   to={`/transcripts/${r.transcript_id}`}
-                  className="card p-4 block hover:border-blue-300 transition-colors group"
+                  className="card p-4 block hover:border-brand-400 transition-colors group"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium text-gray-900 group-hover:text-blue-700 truncate">
+                        <h4 className="font-medium text-gray-900 group-hover:text-brand-600 truncate">
                           {r.title}
                         </h4>
                         {activeResult.source_transcript_ids.includes(r.transcript_id) && (
-                          <span className="badge bg-blue-100 text-blue-700 shrink-0">Used by AI</span>
+                          <span className="badge bg-brand-100 text-brand-700 shrink-0">Used by AI</span>
                         )}
                         {r.category && (
                           <span className="badge bg-gray-100 text-gray-600 shrink-0">
@@ -255,7 +255,7 @@ export default function SearchPage() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0 text-gray-400">
                       <span className="text-xs">score: {r.relevance_score}</span>
-                      <ChevronRight size={16} className="group-hover:text-blue-500" />
+                      <ChevronRight size={16} className="group-hover:text-brand-500" />
                     </div>
                   </div>
                 </Link>
@@ -279,11 +279,11 @@ export default function SearchPage() {
                   setQuery(h.query_text);
                   searchMutation.mutate(h.query_text);
                 }}
-                className="w-full text-left px-4 py-3 card hover:border-blue-300 transition-colors flex items-center justify-between group"
+                className="w-full text-left px-4 py-3 card hover:border-brand-400 transition-colors flex items-center justify-between group"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   {h.knowledge_entry_used ? (
-                    <Brain size={14} className="text-purple-500 shrink-0" />
+                    <Brain size={14} className="text-brand-500 shrink-0" />
                   ) : (
                     <Search size={14} className="text-gray-400 shrink-0" />
                   )}

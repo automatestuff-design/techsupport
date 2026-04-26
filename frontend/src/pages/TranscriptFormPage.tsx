@@ -103,7 +103,7 @@ export default function TranscriptFormPage() {
               onChange={field("title")}
               required
               placeholder="e.g. WiFi connectivity issue — dropped calls"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
             />
           </div>
 
@@ -116,7 +116,7 @@ export default function TranscriptFormPage() {
                 value={form.caller_name}
                 onChange={field("caller_name")}
                 placeholder="John Doe"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
               />
             </div>
             <div>
@@ -126,7 +126,7 @@ export default function TranscriptFormPage() {
                 value={form.agent_name}
                 onChange={field("agent_name")}
                 placeholder="Support Agent"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
               />
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function TranscriptFormPage() {
                 type="date"
                 value={form.call_date}
                 onChange={field("call_date")}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
               />
             </div>
             <div>
@@ -150,7 +150,7 @@ export default function TranscriptFormPage() {
                     value={customCategory}
                     onChange={(e) => setCustomCategory(e.target.value)}
                     placeholder="New category"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm"
                     autoFocus
                   />
                   <button
@@ -172,7 +172,7 @@ export default function TranscriptFormPage() {
                       field("category")(e);
                     }
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm bg-white"
                 >
                   <option value="">No category</option>
                   {categories?.map((c) => (
@@ -195,7 +195,7 @@ export default function TranscriptFormPage() {
               required
               rows={16}
               placeholder={"Agent: Thank you for calling tech support, how can I help?\nCaller: My WiFi keeps dropping every few minutes…"}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono resize-y"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm font-mono resize-y"
             />
           </div>
 

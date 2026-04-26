@@ -127,7 +127,7 @@ export default function TranscriptsPage() {
             onClick={() => setSelectedCategory("")}
             className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
               !selectedCategory
-                ? "bg-blue-600 text-white"
+                ? "bg-brand-600 text-white"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
@@ -139,7 +139,7 @@ export default function TranscriptsPage() {
               onClick={() => setSelectedCategory(cat === selectedCategory ? "" : cat)}
               className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                 selectedCategory === cat
-                  ? "bg-blue-600 text-white"
+                  ? "bg-brand-600 text-white"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
@@ -158,13 +158,13 @@ export default function TranscriptsPage() {
             <Link
               key={t.id}
               to={`/transcripts/${t.id}`}
-              className="card p-4 block hover:border-blue-300 transition-colors group"
+              className="card p-4 block hover:border-brand-400 transition-colors group"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 min-w-0">
                   <FileText size={16} className="text-gray-400 mt-0.5 shrink-0" />
                   <div className="min-w-0">
-                    <h3 className="font-medium text-gray-900 group-hover:text-blue-700 truncate">
+                    <h3 className="font-medium text-gray-900 group-hover:text-brand-600 truncate">
                       {t.title}
                     </h3>
                     <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 flex-wrap">
@@ -182,7 +182,7 @@ export default function TranscriptsPage() {
                   {t.category && (
                     <span className="badge bg-gray-100 text-gray-600">{t.category}</span>
                   )}
-                  <ChevronRight size={16} className="text-gray-400 group-hover:text-blue-500" />
+                  <ChevronRight size={16} className="text-gray-400 group-hover:text-brand-500" />
                 </div>
               </div>
             </Link>

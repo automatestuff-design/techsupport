@@ -3,7 +3,6 @@ import {
   Search,
   FileText,
   Brain,
-  History,
   Plus,
 } from "lucide-react";
 import SearchPage from "./pages/SearchPage";
@@ -22,12 +21,12 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Top nav */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <header className="bg-brand-600 sticky top-0 z-10 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-8">
-              <span className="text-blue-600 font-bold text-lg tracking-tight">
-                TechSupport<span className="text-gray-900">AI</span>
+              <span className="text-white font-bold text-lg tracking-tight">
+                TechSupport<span className="text-gold-400">AI</span>
               </span>
               <nav className="flex items-center gap-1">
                 {navItems.map(({ to, label, icon: Icon, end }) => (
@@ -38,8 +37,8 @@ export default function App() {
                     className={({ isActive }) =>
                       `flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         isActive
-                          ? "bg-blue-50 text-blue-700"
-                          : "text-gray-600 hover:bg-gray-100"
+                          ? "bg-brand-700 text-white"
+                          : "text-brand-100 hover:bg-brand-500 hover:text-white"
                       }`
                     }
                   >
@@ -51,7 +50,7 @@ export default function App() {
             </div>
             <NavLink
               to="/transcripts/new"
-              className="btn-primary flex items-center gap-2 text-sm py-1.5"
+              className="flex items-center gap-2 text-sm py-1.5 px-4 rounded-lg font-medium bg-gold-400 text-brand-900 hover:bg-gold-300 transition-colors"
             >
               <Plus size={16} />
               Add Transcript

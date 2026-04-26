@@ -34,7 +34,7 @@ export default function KnowledgePage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Brain size={24} className="text-purple-600" />
+          <Brain size={24} className="text-brand-600" />
           Knowledge Base
         </h1>
         <p className="text-sm text-gray-500 mt-1">
@@ -54,7 +54,7 @@ export default function KnowledgePage() {
             <div className="text-xs text-gray-500 mt-0.5">High Confidence</div>
           </div>
           <div className="card p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">{stats.total_uses}</div>
+            <div className="text-2xl font-bold text-brand-600">{stats.total_uses}</div>
             <div className="text-xs text-gray-500 mt-0.5">Searches Served</div>
           </div>
           <div className="card p-4 text-center">
@@ -68,12 +68,12 @@ export default function KnowledgePage() {
       )}
 
       {/* How it works */}
-      <div className="card p-5 bg-purple-50 border-purple-200">
-        <h2 className="font-semibold text-purple-900 text-sm mb-3 flex items-center gap-2">
+      <div className="card p-5 bg-brand-50 border-brand-200">
+        <h2 className="font-semibold text-brand-800 text-sm mb-3 flex items-center gap-2">
           <Zap size={14} />
           How the AI learns
         </h2>
-        <ol className="space-y-1.5 text-xs text-purple-800">
+        <ol className="space-y-1.5 text-xs text-brand-700">
           <li className="flex items-start gap-2">
             <span className="font-bold shrink-0">1.</span>
             A support agent searches for a problem — Claude reads the transcripts and synthesizes an answer.
@@ -84,7 +84,7 @@ export default function KnowledgePage() {
           </li>
           <li className="flex items-start gap-2">
             <span className="font-bold shrink-0">3.</span>
-            Future similar queries are answered instantly from the knowledge base (shown in purple).
+            Future similar queries are answered instantly from the knowledge base (shown in teal).
           </li>
           <li className="flex items-start gap-2">
             <span className="font-bold shrink-0">4.</span>
@@ -136,7 +136,7 @@ export default function KnowledgePage() {
                             <span key={tid}>
                               <Link
                                 to={`/transcripts/${tid}`}
-                                className="text-blue-500 hover:underline"
+                                className="text-brand-600 hover:underline"
                               >
                                 #{tid}
                               </Link>
@@ -159,7 +159,7 @@ export default function KnowledgePage() {
           <p className="text-xs max-w-sm mx-auto">
             Search for a problem, get an AI answer, then rate it helpful — the system will learn from your feedback.
           </p>
-          <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:underline">
+          <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-brand-600 hover:underline">
             Go to Search <ChevronRight size={14} />
           </Link>
         </div>
