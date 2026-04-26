@@ -1,5 +1,7 @@
+import csv
+import io
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -94,3 +96,63 @@ async def list_categories(db: AsyncSession = Depends(get_db)):
         select(Transcript.category).distinct().where(Transcript.category.isnot(None))
     )
     return [row[0] for row in result.all()]
+
+
+CSV_COLUMNS = ["title", "content", "caller_name", "agent_name", "call_date", "category"]
+
+
+@router.post("/upload-csv")
+async def upload_transcripts_csv(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+):
+    if not file.filename or not file.filename.endswith(".csv"):
+        raise HTTPException(status_code=400, detail="File must be a .csv")
+
+    raw = await file.read()
+    try:
+        text = raw.decode("utf-8-sig")  # utf-8-sig strips BOM if present
+    except UnicodeDecodeError:
+        text = raw.decode("latin-1")
+
+    reader = csv.DictReader(io.StringIO(text))
+
+    if not reader.fieldnames or "title" not in reader.fieldnames or "content" not in reader.fieldnames:
+        raise HTTPException(
+            status_code=422,
+            detail=f"CSV must have at least 'title' and 'content' columns. Found: {reader.fieldnames}",
+        )
+
+    created, skipped = 0, 0
+    errors: list[str] = []
+
+    for i, row in enumerate(reader, start=2):  # row 1 is header
+        title = (row.get("title") or "").strip()
+        content = (row.get("content") or "").strip()
+        if not title or not content:
+            skipped += 1
+            errors.append(f"Row {i}: skipped (missing title or content)")
+            continue
+
+        call_date = None
+        raw_date = (row.get("call_date") or "").strip()
+        if raw_date:
+            for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%d/%m/%Y"):
+                try:
+                    call_date = datetime.strptime(raw_date, fmt)
+                    break
+                except ValueError:
+                    continue
+
+        db.add(Transcript(
+            title=title,
+            content=content,
+            caller_name=(row.get("caller_name") or "").strip() or None,
+            agent_name=(row.get("agent_name") or "").strip() or None,
+            call_date=call_date,
+            category=(row.get("category") or "").strip() or None,
+        ))
+        created += 1
+
+    await db.commit()
+    return {"created": created, "skipped": skipped, "errors": errors}

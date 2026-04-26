@@ -45,6 +45,16 @@ export const getKnowledgeStats = async () =>
 export const getKnowledgeEntries = async () =>
   api.get<KnowledgeEntry[]>("/search/knowledge/entries").then((r) => r.data);
 
+export const uploadTranscriptsCsv = async (file: File) => {
+  const form = new FormData();
+  form.append("file", file);
+  return api.post<{ created: number; skipped: number; errors: string[] }>(
+    "/transcripts/upload-csv",
+    form,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  ).then((r) => r.data);
+};
+
 // Feedback
 export const submitFeedback = async (params: {
   query_id: number;

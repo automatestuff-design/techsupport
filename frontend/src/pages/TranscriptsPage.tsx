@@ -1,12 +1,38 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { FileText, Plus, ChevronRight, Filter } from "lucide-react";
-import { getTranscripts, getCategories } from "../api/client";
+import { FileText, Plus, ChevronRight, Filter, Upload, Download, CheckCircle, AlertCircle, X } from "lucide-react";
+import { getTranscripts, getCategories, uploadTranscriptsCsv } from "../api/client";
 import { formatDistanceToNow } from "date-fns";
+
+const CSV_TEMPLATE_HEADERS = "title,content,caller_name,agent_name,call_date,category";
+const CSV_TEMPLATE_EXAMPLE =
+  `"WiFi dropping issue","Agent: Thank you for calling...\nCaller: My WiFi keeps dropping","Jane Smith","Tom Lee","2024-11-01","Connectivity"`;
+
+function downloadTemplate() {
+  const blob = new Blob([CSV_TEMPLATE_HEADERS + "\n" + CSV_TEMPLATE_EXAMPLE], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "transcripts_template.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export default function TranscriptsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [uploadResult, setUploadResult] = useState<{ created: number; skipped: number; errors: string[] } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
+
+  const uploadMutation = useMutation({
+    mutationFn: uploadTranscriptsCsv,
+    onSuccess: (data) => {
+      setUploadResult(data);
+      queryClient.invalidateQueries({ queryKey: ["transcripts"] });
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
 
   const { data: transcripts, isLoading } = useQuery({
     queryKey: ["transcripts", selectedCategory],
@@ -28,11 +54,70 @@ export default function TranscriptsPage() {
             {selectedCategory && ` in "${selectedCategory}"`}
           </p>
         </div>
-        <Link to="/transcripts/new" className="btn-primary flex items-center gap-2 text-sm">
-          <Plus size={16} />
-          Add Transcript
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={downloadTemplate}
+            className="btn-secondary flex items-center gap-2 text-sm py-1.5"
+          >
+            <Download size={15} />
+            CSV Template
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadMutation.isPending}
+            className="btn-secondary flex items-center gap-2 text-sm py-1.5"
+          >
+            <Upload size={15} />
+            {uploadMutation.isPending ? "Uploading…" : "Upload CSV"}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) {
+                setUploadResult(null);
+                uploadMutation.mutate(f);
+              }
+              e.target.value = "";
+            }}
+          />
+          <Link to="/transcripts/new" className="btn-primary flex items-center gap-2 text-sm py-1.5">
+            <Plus size={16} />
+            Add Transcript
+          </Link>
+        </div>
       </div>
+
+      {/* Upload result */}
+      {uploadResult && (
+        <div className={`flex items-start gap-3 p-4 rounded-xl border text-sm ${
+          uploadMutation.isError
+            ? "bg-red-50 border-red-200 text-red-700"
+            : "bg-green-50 border-green-200 text-green-800"
+        }`}>
+          <CheckCircle size={16} className="mt-0.5 shrink-0" />
+          <div className="flex-1">
+            <span className="font-medium">{uploadResult.created} transcript{uploadResult.created !== 1 ? "s" : ""} imported</span>
+            {uploadResult.skipped > 0 && <span className="text-gray-500 ml-2">({uploadResult.skipped} skipped)</span>}
+            {uploadResult.errors.length > 0 && (
+              <ul className="mt-1 text-xs text-gray-500 space-y-0.5">
+                {uploadResult.errors.map((e, i) => <li key={i}>{e}</li>)}
+              </ul>
+            )}
+          </div>
+          <button onClick={() => setUploadResult(null)}><X size={14} /></button>
+        </div>
+      )}
+
+      {uploadMutation.isError && !uploadResult && (
+        <div className="flex items-center gap-2 p-3 rounded-xl border bg-red-50 border-red-200 text-red-700 text-sm">
+          <AlertCircle size={15} />
+          Upload failed — check that the file is a valid CSV with title and content columns.
+        </div>
+      )}
 
       {/* Category filter */}
       {categories && categories.length > 0 && (
