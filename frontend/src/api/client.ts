@@ -1,0 +1,53 @@
+import axios from "axios";
+import type {
+  KnowledgeEntry,
+  KnowledgeStats,
+  SearchHistoryItem,
+  SearchResponse,
+  Transcript,
+  TranscriptCreate,
+} from "../types";
+
+const api = axios.create({
+  baseURL: "/api",
+  headers: { "Content-Type": "application/json" },
+});
+
+// Transcripts
+export const getTranscripts = async (params?: { category?: string; skip?: number; limit?: number }) =>
+  api.get<Transcript[]>("/transcripts/", { params }).then((r) => r.data);
+
+export const getTranscript = async (id: number) =>
+  api.get<Transcript>(`/transcripts/${id}`).then((r) => r.data);
+
+export const createTranscript = async (data: TranscriptCreate) =>
+  api.post<Transcript>("/transcripts/", data).then((r) => r.data);
+
+export const updateTranscript = async (id: number, data: TranscriptCreate) =>
+  api.put<Transcript>(`/transcripts/${id}`, data).then((r) => r.data);
+
+export const deleteTranscript = async (id: number) =>
+  api.delete(`/transcripts/${id}`);
+
+export const getCategories = async () =>
+  api.get<string[]>("/transcripts/categories/list").then((r) => r.data);
+
+// Search
+export const search = async (query: string, limit = 10) =>
+  api.post<SearchResponse>("/search/", { query, limit }).then((r) => r.data);
+
+export const getSearchHistory = async (limit = 20) =>
+  api.get<SearchHistoryItem[]>("/search/history", { params: { limit } }).then((r) => r.data);
+
+export const getKnowledgeStats = async () =>
+  api.get<KnowledgeStats>("/search/knowledge/stats").then((r) => r.data);
+
+export const getKnowledgeEntries = async () =>
+  api.get<KnowledgeEntry[]>("/search/knowledge/entries").then((r) => r.data);
+
+// Feedback
+export const submitFeedback = async (params: {
+  query_id: number;
+  was_helpful: boolean;
+  transcript_id?: number;
+}) => api.post("/feedback/", params).then((r) => r.data);
