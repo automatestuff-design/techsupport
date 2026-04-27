@@ -146,7 +146,7 @@ Agent: Yes, and also check if the C: drive is nearly full. Low disk space causes
 
 Caller: Oh! Only 4GB free on a 256GB drive. That's the problem!
 
-Agent: Definitely. You need at least 10-15% free. Run Disk Cleanup as administrator, include system files. Also check if any huge log files were created during the malware removal in C:\Windows\Temp.
+Agent: Definitely. You need at least 10-15% free. Run Disk Cleanup as administrator, include system files. Also check if any huge log files were created during the malware removal in C:\\Windows\\Temp.
 
 Caller: There are 40GB of log files in Temp! Deleting now.
 

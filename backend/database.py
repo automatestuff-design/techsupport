@@ -13,7 +13,8 @@ elif _raw.startswith("postgresql://") and "+asyncpg" not in _raw:
 else:
     DATABASE_URL = _raw
 
-engine = create_async_engine(DATABASE_URL, echo=False)
+_connect_args = {"statement_cache_size": 0} if DATABASE_URL.startswith("postgresql") else {}
+engine = create_async_engine(DATABASE_URL, echo=False, connect_args=_connect_args)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
