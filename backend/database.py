@@ -1,11 +1,10 @@
 import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.pool import NullPool
 
 _raw = os.environ.get("DATABASE_URL", "sqlite+aiosqlite:///./techsupport.db")
 
-# Normalize Postgres URLs — Render/Supabase often use postgres:// or postgresql://
-# without the asyncpg driver suffix
 if _raw.startswith("postgres://"):
     DATABASE_URL = _raw.replace("postgres://", "postgresql+asyncpg://", 1)
 elif _raw.startswith("postgresql://") and "+asyncpg" not in _raw:
@@ -13,8 +12,13 @@ elif _raw.startswith("postgresql://") and "+asyncpg" not in _raw:
 else:
     DATABASE_URL = _raw
 
-_connect_args = {"statement_cache_size": 0} if DATABASE_URL.startswith("postgresql") else {}
-engine = create_async_engine(DATABASE_URL, echo=False, connect_args=_connect_args)
+_is_postgres = DATABASE_URL.startswith("postgresql")
+engine = create_async_engine(
+    DATABASE_URL,
+    echo=False,
+    poolclass=NullPool if _is_postgres else None,
+    connect_args={"statement_cache_size": 0} if _is_postgres else {},
+)
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
