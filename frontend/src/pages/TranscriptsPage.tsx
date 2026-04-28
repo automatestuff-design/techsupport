@@ -1,8 +1,8 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { FileText, Plus, ChevronRight, Filter, Upload, Download, CheckCircle, AlertCircle, X } from "lucide-react";
-import { getTranscripts, getCategories, uploadTranscriptsCsv } from "../api/client";
+import { FileText, Plus, ChevronRight, Filter, Upload, Download, CheckCircle, AlertCircle, X, FileImage } from "lucide-react";
+import { getTranscripts, getCategories, uploadTranscriptsCsv, uploadDocument } from "../api/client";
 import { formatDistanceToNow } from "date-fns";
 
 const CSV_TEMPLATE_HEADERS = "title,content,caller_name,agent_name,call_date,category";
@@ -22,7 +22,10 @@ function downloadTemplate() {
 export default function TranscriptsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [uploadResult, setUploadResult] = useState<{ created: number; skipped: number; errors: string[] } | null>(null);
+  const [docResult, setDocResult] = useState<{ title: string } | null>(null);
+  const [docError, setDocError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
   const uploadMutation = useMutation({
@@ -31,6 +34,22 @@ export default function TranscriptsPage() {
       setUploadResult(data);
       queryClient.invalidateQueries({ queryKey: ["transcripts"] });
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
+
+  const docMutation = useMutation({
+    mutationFn: uploadDocument,
+    onSuccess: (transcript) => {
+      setDocResult({ title: transcript.title });
+      setDocError(null);
+      queryClient.invalidateQueries({ queryKey: ["transcripts"] });
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
+        ?? "Document upload failed.";
+      setDocError(msg);
+      setDocResult(null);
     },
   });
 
@@ -84,6 +103,29 @@ export default function TranscriptsPage() {
               e.target.value = "";
             }}
           />
+          <button
+            onClick={() => docInputRef.current?.click()}
+            disabled={docMutation.isPending}
+            className="btn-secondary flex items-center gap-2 text-sm py-1.5"
+          >
+            <FileImage size={15} />
+            {docMutation.isPending ? "Extracting…" : "Upload Document"}
+          </button>
+          <input
+            ref={docInputRef}
+            type="file"
+            accept=".pdf,.docx,.jpg,.jpeg,.png,.gif,.webp"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) {
+                setDocResult(null);
+                setDocError(null);
+                docMutation.mutate(f);
+              }
+              e.target.value = "";
+            }}
+          />
           <Link to="/transcripts/new" className="btn-primary flex items-center gap-2 text-sm py-1.5">
             <Plus size={16} />
             Add Transcript
@@ -116,6 +158,24 @@ export default function TranscriptsPage() {
         <div className="flex items-center gap-2 p-3 rounded-xl border bg-red-50 border-red-200 text-red-700 text-sm">
           <AlertCircle size={15} />
           Upload failed — check that the file is a valid CSV with title and content columns.
+        </div>
+      )}
+
+      {docResult && (
+        <div className="flex items-start gap-3 p-4 rounded-xl border bg-green-50 border-green-200 text-green-800 text-sm">
+          <CheckCircle size={16} className="mt-0.5 shrink-0" />
+          <div className="flex-1">
+            <span className="font-medium">Document imported:</span> {docResult.title}
+          </div>
+          <button onClick={() => setDocResult(null)}><X size={14} /></button>
+        </div>
+      )}
+
+      {docError && (
+        <div className="flex items-start gap-3 p-4 rounded-xl border bg-red-50 border-red-200 text-red-700 text-sm">
+          <AlertCircle size={15} className="mt-0.5 shrink-0" />
+          <div className="flex-1">{docError}</div>
+          <button onClick={() => setDocError(null)}><X size={14} /></button>
         </div>
       )}
 

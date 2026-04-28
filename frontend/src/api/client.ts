@@ -65,6 +65,14 @@ export const uploadTranscriptsCsv = async (file: File) => {
   ).then((r) => r.data);
 };
 
+export const uploadDocument = async (file: File) => {
+  const form = new FormData();
+  form.append("file", file);
+  return api.post<Transcript>("/transcripts/upload-doc", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  }).then((r) => r.data);
+};
+
 // Feedback
 export const submitFeedback = async (params: {
   query_id: number;

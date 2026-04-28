@@ -1,6 +1,7 @@
 import csv
 import io
 from datetime import datetime
+from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -161,3 +162,72 @@ async def upload_transcripts_csv(
 
     await db.commit()
     return {"created": created, "skipped": skipped, "errors": errors}
+
+
+_DOC_EXTENSIONS = {".pdf", ".docx", ".jpg", ".jpeg", ".png", ".gif", ".webp"}
+_IMAGE_MEDIA_TYPES = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
+}
+_MAX_FILE_BYTES = 20 * 1024 * 1024  # 20 MB
+
+
+@router.post("/upload-doc", response_model=TranscriptResponse, status_code=201)
+async def upload_document(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+):
+    """Extract text from a PDF, Word document, or image and save it as a transcript."""
+    from services.document_service import (
+        extract_text_from_pdf,
+        extract_text_from_docx,
+        extract_from_image,
+        generate_metadata,
+    )
+
+    filename = file.filename or "document"
+    ext = Path(filename).suffix.lower()
+
+    if ext not in _DOC_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type '{ext}'. Supported: PDF, DOCX, JPG, PNG, GIF, WEBP.",
+        )
+
+    data = await file.read()
+    if len(data) > _MAX_FILE_BYTES:
+        raise HTTPException(status_code=413, detail="File too large. Maximum size is 20 MB.")
+
+    if ext == ".pdf":
+        content = extract_text_from_pdf(data)
+        if not content or len(content) < 50:
+            raise HTTPException(
+                status_code=422,
+                detail="Could not extract text from this PDF — it may be image-based. Try uploading a screenshot instead.",
+            )
+        meta = await generate_metadata(content, filename)
+
+    elif ext == ".docx":
+        content = extract_text_from_docx(data)
+        if not content:
+            raise HTTPException(status_code=422, detail="Could not extract text from this document.")
+        meta = await generate_metadata(content, filename)
+
+    else:  # image
+        media_type = _IMAGE_MEDIA_TYPES[ext]
+        meta = await extract_from_image(data, media_type, filename)
+        content = meta.get("content") or ""
+        if not content:
+            raise HTTPException(status_code=422, detail="Could not extract content from this image.")
+
+    title = (meta.get("title") or Path(filename).stem.replace("_", " ").replace("-", " ").title())[:200]
+    category = meta.get("category") or None
+
+    transcript = Transcript(title=title, content=content, category=category)
+    db.add(transcript)
+    await db.commit()
+    await db.refresh(transcript)
+    return transcript
