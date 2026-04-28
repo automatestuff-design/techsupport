@@ -62,7 +62,13 @@ export default function TranscriptFormPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const category = useCustom ? customCategory : form.category;
-    saveMutation.mutate({ ...form, category: category || undefined });
+    saveMutation.mutate({
+      ...form,
+      caller_name: form.caller_name || undefined,
+      agent_name: form.agent_name || undefined,
+      call_date: form.call_date || undefined,
+      category: category || undefined,
+    });
   };
 
   const field = (key: keyof TranscriptCreate) => (
