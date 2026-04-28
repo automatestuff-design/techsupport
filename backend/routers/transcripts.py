@@ -34,6 +34,7 @@ class TranscriptResponse(BaseModel):
     agent_name: str | None
     call_date: datetime | None
     category: str | None
+    source_file_url: str | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -186,6 +187,7 @@ async def upload_document(
         extract_text_from_docx,
         extract_from_image,
         generate_metadata,
+        upload_to_supabase_storage,
     )
 
     filename = file.filename or "document"
@@ -201,6 +203,8 @@ async def upload_document(
     if len(data) > _MAX_FILE_BYTES:
         raise HTTPException(status_code=413, detail="File too large. Maximum size is 20 MB.")
 
+    source_file_url: str | None = None
+
     if ext == ".pdf":
         content = extract_text_from_pdf(data)
         if not content or len(content) < 50:
@@ -209,6 +213,7 @@ async def upload_document(
                 detail="Could not extract text from this PDF — it may be image-based. Try uploading a screenshot instead.",
             )
         meta = await generate_metadata(content, filename)
+        source_file_url = await upload_to_supabase_storage(data, filename, "application/pdf")
 
     elif ext == ".docx":
         content = extract_text_from_docx(data)
@@ -226,7 +231,7 @@ async def upload_document(
     title = (meta.get("title") or Path(filename).stem.replace("_", " ").replace("-", " ").title())[:200]
     category = meta.get("category") or None
 
-    transcript = Transcript(title=title, content=content, category=category)
+    transcript = Transcript(title=title, content=content, category=category, source_file_url=source_file_url)
     db.add(transcript)
     await db.commit()
     await db.refresh(transcript)

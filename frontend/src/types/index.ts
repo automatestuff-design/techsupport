@@ -6,6 +6,7 @@ export interface Transcript {
   agent_name: string | null;
   call_date: string | null;
   category: string | null;
+  source_file_url: string | null;
   created_at: string;
 }
 

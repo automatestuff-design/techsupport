@@ -14,6 +14,7 @@ class Transcript(Base):
     agent_name: Mapped[str | None] = mapped_column(String(100))
     call_date: Mapped[datetime | None] = mapped_column(DateTime)
     category: Mapped[str | None] = mapped_column(String(100))
+    source_file_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     feedback: Mapped[list["SearchFeedback"]] = relationship(back_populates="transcript")

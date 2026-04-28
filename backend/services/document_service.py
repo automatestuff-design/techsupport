@@ -3,7 +3,10 @@ import io
 import json
 import os
 import re
+import uuid
+from pathlib import Path
 
+import httpx
 from anthropic import AsyncAnthropic
 
 
@@ -81,6 +84,36 @@ async def extract_from_image(data: bytes, media_type: str, filename: str) -> dic
                 pass
     stem = filename.rsplit(".", 1)[0].replace("_", " ").replace("-", " ").title()
     return {"title": stem, "content": raw, "category": None}
+
+
+async def upload_to_supabase_storage(data: bytes, filename: str, content_type: str) -> str | None:
+    """Upload a file to Supabase Storage and return its public URL, or None on failure."""
+    supabase_url = os.environ.get("SUPABASE_URL", "")
+    service_role_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+    if not supabase_url or not service_role_key:
+        return None
+
+    bucket = "transcripts"
+    stem = Path(filename).stem[:50].replace(" ", "_")
+    ext = Path(filename).suffix.lower()
+    storage_path = f"uploads/{stem}_{uuid.uuid4().hex[:8]}{ext}"
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            f"{supabase_url}/storage/v1/object/{bucket}/{storage_path}",
+            content=data,
+            headers={
+                "Authorization": f"Bearer {service_role_key}",
+                "apikey": service_role_key,
+                "Content-Type": content_type,
+            },
+            timeout=60.0,
+        )
+
+    if resp.status_code not in (200, 201):
+        return None
+
+    return f"{supabase_url}/storage/v1/object/public/{bucket}/{storage_path}"
 
 
 async def generate_metadata(text: str, filename: str) -> dict:

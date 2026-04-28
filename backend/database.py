@@ -1,4 +1,5 @@
 import os
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 
@@ -32,3 +33,8 @@ async def get_db():
 async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Add columns introduced after initial deployment (safe on both Postgres and SQLite).
+        if "postgresql" in DATABASE_URL:
+            await conn.execute(text(
+                "ALTER TABLE transcripts ADD COLUMN IF NOT EXISTS source_file_url TEXT"
+            ))

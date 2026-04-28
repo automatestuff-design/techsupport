@@ -9,6 +9,8 @@ import {
   Calendar,
   Tag,
   AlertCircle,
+  FileText,
+  ExternalLink,
 } from "lucide-react";
 import { getTranscript, deleteTranscript } from "../api/client";
 import { format } from "date-fns";
@@ -125,6 +127,33 @@ export default function TranscriptDetailPage() {
           Added {format(new Date(transcript.created_at), "PPP 'at' p")}
         </p>
       </div>
+
+      {/* PDF viewer */}
+      {transcript.source_file_url && (
+        <div className="card p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+              <FileText size={14} className="text-gray-400" />
+              Original Document
+            </h2>
+            <a
+              href={transcript.source_file_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700 transition-colors"
+            >
+              Open in new tab
+              <ExternalLink size={11} />
+            </a>
+          </div>
+          <iframe
+            src={transcript.source_file_url}
+            title="Original document"
+            className="w-full rounded border border-gray-200"
+            style={{ height: "700px" }}
+          />
+        </div>
+      )}
 
       {/* Content */}
       <div className="card p-6">
